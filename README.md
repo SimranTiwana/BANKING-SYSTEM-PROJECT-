@@ -1,4 +1,3 @@
-# BANKING-SYSTEM-PROJECT-
 
 # Banking System (Console Java Project)
 
