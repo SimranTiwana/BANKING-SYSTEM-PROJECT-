@@ -11,9 +11,9 @@ Run:
 java -cp src BankApp
 
 ## Project Files
-- BankApp.java → Main program
+- Src/ → BankApp.java → Main program and CSV files for users, accounts, transactions
 - models/ → Account, User, Transaction classes
-- data/ → CSV files for users, accounts, transactions
+
 
 ## Team Members
 - Arpita Chaudhary: Documentation + Sample Data
