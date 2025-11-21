@@ -1,5 +1,5 @@
 import java.io.*;
-import java.util.*;
+import java.util.Scanner;
 
 public class BankApp {
 
@@ -26,6 +26,7 @@ public class BankApp {
                         System.out.println("3. Transfer");
                         System.out.println("4. Report");
                         System.out.println("5. Logout");
+                        System.out.println("6. Check Balance");
                         System.out.print("Choose an option: ");
                         String action = SCANNER.nextLine();
 
@@ -41,7 +42,9 @@ public class BankApp {
                             currentUser = null;
                             System.out.println("Logged out.");
                             break;
-                        } else {
+                        } else if (action.equals("6")) {
+                            checkBalance(currentUser);
+                            }else {
                             System.out.println("Invalid option.");
                         }
                     }
@@ -240,6 +243,23 @@ public class BankApp {
             System.out.println("Error writing transactions file.");
         }
     }
+    static void checkBalance(String user) {
+    try (BufferedReader reader = new BufferedReader(new FileReader("accounts.csv"))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length < 2) continue;
+            if (parts[0].equals(user)) {
+                System.out.println("Current balance: " + parts[1]);
+                return;
+            }
+        }
+        System.out.println("Account not found.");
+    } catch (IOException e) {
+        System.out.println("Error reading accounts file.");
+    }
+}
+
 
     static void transfer(String user) {
     Scanner sc = SCANNER;
