@@ -242,82 +242,101 @@ public class BankApp {
     }
 
     static void transfer(String user) {
-        Scanner sc = SCANNER;
+    Scanner sc = SCANNER;
 
-        System.out.print("Enter recipient username: ");
-        String toUser = sc.nextLine();
+    System.out.print("Enter recipient username: ");
+    String toUser = sc.nextLine().trim();
 
-        System.out.print("Enter transfer amount: ");
-        Double amount = safeParseAmount(sc.nextLine());
-        if (amount == null) return;
-
-
-        double fromBalance = 0, toBalance = 0;
-        boolean toFound = false;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader("accounts.csv"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts[0].equals(user)) {
-                    fromBalance = Double.parseDouble(parts[1]);
-                }
-                if (parts[0].equals(toUser)) {
-                    toBalance = Double.parseDouble(parts[1]);
-                    toFound = true;
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error reading accounts file.");
-            return;
-        }
-
-        if (!toFound) {
-            System.out.println("Recipient not found.");
-            return;
-        }
-
-        if (fromBalance < amount) {
-            System.out.println("Insufficient funds.");
-            return;
-        }
-
-        File inputFileT = new File("accounts.csv");
-        File tempFileT = new File("accounts_temp.csv");
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFileT));
-             PrintWriter pw = new PrintWriter(new FileWriter(tempFileT))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts[0].equals(user)) {
-                    double newBal = Double.parseDouble(parts[1]) - amount;
-                    pw.println(user + "," + newBal);
-                } else if (parts[0].equals(toUser)) {
-                    double newBal = Double.parseDouble(parts[1]) + amount;
-                    pw.println(toUser + "," + newBal);
-                } else {
-                    pw.println(line);
-                }
-            }
-
-        } catch (IOException e) {
-            System.out.println("Error processing accounts file.");
-            return;
-        }
-
-        inputFileT.delete();
-        tempFileT.renameTo(inputFileT);
-
-        System.out.println("Transferred " + amount + " to " + toUser);
-
-        try (PrintWriter pw = new PrintWriter(new FileWriter("transactions.csv", true))) {
-            pw.println(user + ",transfer," + amount + "," + toUser);
-        } catch (IOException e) {
-            System.out.println("Error writing transactions file.");
-        }
+    if (toUser.equalsIgnoreCase(user)) {
+        System.out.println("Cannot transfer to self.");
+        return;
     }
+
+    System.out.print("Enter transfer amount: ");
+    Double amountObj = safeParseAmount(sc.nextLine());
+    if (amountObj == null) return;
+    double amount = amountObj;
+
+    double fromBalance = 0, toBalance = 0;
+    boolean toFound = false;
+    boolean fromFound = false;
+
+    try (BufferedReader reader = new BufferedReader(new FileReader("src/accounts.csv"))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length < 2) continue;
+
+            if (parts[0].equals(user)) {
+                fromBalance = Double.parseDouble(parts[1]);
+                fromFound = true;
+            }
+            if (parts[0].equals(toUser)) {
+                toBalance = Double.parseDouble(parts[1]);
+                toFound = true;
+            }
+        }
+    } catch (IOException e) {
+        System.out.println("Error reading accounts file.");
+        return;
+    }
+
+    if (!toFound) {
+        System.out.println("Recipient not found.");
+        return;
+    }
+
+    if (!fromFound) {
+        System.out.println("Sender account not found.");
+        return;
+    }
+
+    if (fromBalance < amount) {
+        System.out.println("Insufficient funds.");
+        return;
+    }
+
+    File inputFileT = new File("src/accounts.csv");
+    File tempFileT = new File("src/accounts_temp.csv");
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(inputFileT));
+         PrintWriter pw = new PrintWriter(new FileWriter(tempFileT))) {
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(",");
+            if (parts.length < 2) {
+                pw.println(line);
+                continue;
+            }
+
+            if (parts[0].equals(user)) {
+                double newBal = Double.parseDouble(parts[1]) - amount;
+                pw.println(user + "," + newBal);
+            } else if (parts[0].equals(toUser)) {
+                double newBal = Double.parseDouble(parts[1]) + amount;
+                pw.println(toUser + "," + newBal);
+            } else {
+                pw.println(line);
+            }
+        }
+
+    } catch (IOException e) {
+        System.out.println("Error processing accounts file.");
+        return;
+    }
+
+    tempFileT.renameTo(inputFileT);
+
+    System.out.println("Transferred " + amount + " to " + toUser);
+
+    try (PrintWriter pw = new PrintWriter(new FileWriter("src/transactions.csv", true))) {
+        pw.println(user + ",transfer," + amount + "," + toUser + "," + java.time.LocalDate.now());
+    } catch (IOException e) {
+        System.out.println("Error writing transactions file.");
+    }
+}
+
 
     static void report(String user) {
         System.out.println("--- Transactions ---");
