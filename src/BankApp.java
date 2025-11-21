@@ -64,9 +64,17 @@ public class BankApp {
         Scanner sc = SCANNER;
 
         System.out.print("Enter new username: ");
-        String newUser = sc.nextLine();
+        String newUser = SCANNER.nextLine().trim();
+        if (newUser.isEmpty()){
+            System.out.println("Username cannot be empty.");
+            return; 
+        }
         System.out.print("Enter new password: ");
-        String newPass = sc.nextLine();
+        String newPass = SCANNER.nextLine();
+        if (newPass.isEmpty()){
+            System.out.println("Password cannot be empty."); 
+            return;
+        }
 
         try (BufferedReader reader = new BufferedReader(new FileReader("users.csv"))) {
             String line;
